@@ -1,0 +1,28 @@
+POP优化方案
+2011.08.13 hechunhui
+
+advection::advu
+  参数
+  [i] k 整型数
+  [o] LUK:需要原样拷贝
+  [o] LVK:需要原样拷贝
+  [io]WUK:可能仅在advection中使用，可以避免拷贝
+  [i] UUU:实参为UUEL, 与prognostic模块关联，要拷贝
+  [i] VVV:实参为VVEL, 与prognostic模块关联，要拷贝
+  [i] this_block: 运行时为常量
+  
+  需要的全局参数
+  DYU, DZU: 几何信息 运行时为常量
+
+CUDA程序结构：
+cuda_init.cu
+  cuda_init: 初始化CUDA环境
+  
+cuda_xxx.cu
+  cuda_xxx_alloc: 分配显存
+  cuda_xxx_copyconst: 拷贝常数信息到显存
+  cuda_xxx_copyin: 拷贝信息到显存
+  cuda_xxx_copyout: 拷贝信息回内存
+  cuda_xxx_run: 运行kernel
+  cuda_xxx_free: 释放显存
+  

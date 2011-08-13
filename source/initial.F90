@@ -108,18 +108,24 @@
       k,                      &! dummy vertical level index
       ier                      ! error flag
 
+   external cuda_init
+
 !-----------------------------------------------------------------------
 !
 !  initialize message-passing or other communication protocol
 !
 !-----------------------------------------------------------------------
-
    call init_communicate
-
+#ifdef CUDA_VER
+   call cuda_init()
+#endif
    if (my_task == master_task) then
       write(stdout,delim_fmt)
       write(stdout,blank_fmt)
       write(stdout,'(a30)') ' Parallel Ocean Program (POP) '
+#ifdef CUDA_VER
+      write(stdout,'(a15)') '  CUDA Version '
+#endif
       write(stdout,'(a36)') ' Version 2.0.1 Released 21 Jan 2004'
       write(stdout,blank_fmt)
       write(stdout,delim_fmt)

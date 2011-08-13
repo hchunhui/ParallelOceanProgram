@@ -1,0 +1,11 @@
+This is Parallel Ocean Program CUDA Version
+
+Dependence: Fortran, C, CUDA, MPI, netcdf
+
+Compile:
+  ./setup_run_dir_with_cuda testcu [model]
+  cd testcu
+  make
+
+Source code in source/
+Develop plan in doc/POP_CUDA_opt
