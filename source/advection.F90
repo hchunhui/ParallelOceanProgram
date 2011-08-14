@@ -194,7 +194,15 @@
 
    type (block) ::        &
       this_block          ! block information for current block
-
+!-----------------------------------------------------------------------
+!  init CUDA
+!-----------------------------------------------------------------------
+#ifdef CUDA_VER
+   external cuda_advection_alloc
+   call cuda_advection_alloc(nx_block, ny_block, km, max_blocks_clinic)
+   call cuda_advection_copyconst(DXU, DYU, DZU)
+   write(stdout,'(a16)') 'advection acc on'
+#endif
 !-----------------------------------------------------------------------
 !
 !  read input namelist for choice of tracer advection method
@@ -703,7 +711,17 @@
       FVN,FUE,         &! stencil coeffs used by tavg
       WORK,            &! local temp space
       WUKB              ! vert velocity at bottom of level k U box
-
+!-----------------------------------------------------------------------
+!   CUDA ACC
+!-----------------------------------------------------------------------
+#ifdef CUDA_VER
+   external cuda_advection_copyin
+   external cuda_advection_copyout
+   external cuda_advection_run_pbc
+   external cuda_advection_run_npbc
+   external cuda_advection_run_clearoutput
+   call cuda_advection_copyin(WUK, UUU, VVV)
+#endif
 !-----------------------------------------------------------------------
 !
 !  advection fluxes for U box (4-point averages of adv fluxes
@@ -719,12 +737,20 @@
    iend = this_block%ie
    jbeg = this_block%jb
    jend = this_block%je
-
+#ifdef CUDA_VER
+   call cuda_advection_run_clearoutput()
+   if (partial_bottom_cells) then
+      call cuda_advection_run_pbc(ibeg, iend, jbeg, jend, k)
+   else
+      call cuda_advection_run_npbc(ibeg, iend, jbeg, jend, k)
+   endif
+   call cuda_advection_copyout(UUW, UUE, VUS, VUN)
+#else      
    UUW = c0
    UUE = c0
    VUN = c0
    VUS = c0
-
+      
    if (partial_bottom_cells) then
 
       do j=jbeg-1,jend+1
@@ -822,7 +848,7 @@
       end do
 
    endif ! partial bottom cells
-
+#endif
 
 !-----------------------------------------------------------------------
 !
