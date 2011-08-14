@@ -86,4 +86,5 @@ foreach name ( domain_size.F90 pop_in pop_sgi.log )
 end
 echo "Copying GNUmakefile"
 cp GNUmakefile.compile.cuda ../$subdir/GNUmakefile
-
+echo "Copying C include files"
+cp ../include/* ../$subdir/
