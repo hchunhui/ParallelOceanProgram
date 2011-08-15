@@ -6,11 +6,11 @@ static int max_blocks_clinic;
 
 typedef double myfloat;
 #define v2(name,a,b) \
-	name[(b)*nx_block+(a)]
+	name[((b)-1)*nx_block+((a)-1)]
 #define v3(name,a,b,c) \
-	name[nx_block*( ny_block*(c)+(b) )+(a)]
+	name[nx_block*( ny_block*((c)-1)+((b)-1) )+((a)-1)]
 #define v4(name,a,b,c,d) \
-	name[nx_block*( ny_block*(km*(c)+(b))+(a))]
+	name[nx_block*( ny_block*(km*((d)-1)+((c)-1))+((b)-1) )+((a)-1)]
 
 myfloat *dDXU;
 static int DXUSIZE;
@@ -48,13 +48,12 @@ __global__ void
 kernel1_pbc(
 	myfloat *dDXU, myfloat *dDYU, myfloat *dDZU,
 	int nx_block, int ny_block, int km, int max_blocks_clinic,
-	int ibeg, int jbeg, int k,
+	int ibeg, int jbeg, int k, int bid,
 	myfloat *dWUK, myfloat *dUUU, myfloat *dVVV,
 	myfloat *dUUW, myfloat *dUUE, myfloat *dVUS, myfloat *dVUN)
 {
-	int i = threadIdx.x+ibeg-2;
-	int j = blockIdx.x+jbeg-2;
-	int bid = 0;
+	int i = threadIdx.x+ibeg-1;
+	int j = blockIdx.x+jbeg-1;
 	
 	v2(dUUW, i, j) =
 		0.25 * (
@@ -171,13 +170,12 @@ __global__ void
 kernel1_npbc(
 	myfloat *dDXU, myfloat *dDYU, myfloat *dDZU,
 	int nx_block, int ny_block, int km, int max_blocks_clinic,
-	int ibeg, int jbeg, int k,
+	int ibeg, int jbeg, int k, int bid,
 	myfloat *dWUK, myfloat *dUUU, myfloat *dVVV,
 	myfloat *dUUW, myfloat *dUUE, myfloat *dVUS, myfloat *dVUN)
 {
-	int i = threadIdx.x+ibeg-2;
-	int j = blockIdx.x+jbeg-2;
-	int bid = 0;
+	int i = threadIdx.x+ibeg-1;
+	int j = blockIdx.x+jbeg-1;
 	
 	v2(dUUW, i, j) =
 		0.25 * (
@@ -371,7 +369,7 @@ void cuda_advection_free_()
 
 extern "C"
 void cuda_advection_run_pbc_
-(int *ibeg, int *iend, int *jbeg, int *jend, int *k)
+(int *ibeg, int *iend, int *jbeg, int *jend, int *k,int *bid)
 {
      	dim3 dimGrid(*jend - *jbeg + 3);
 	dim3 dimBlock(*iend - *ibeg + 3);
@@ -379,14 +377,14 @@ void cuda_advection_run_pbc_
 	kernel1_npbc<<<dimGrid, dimBlock>>>
 		(dDXU, dDYU, dDZU,
 		 nx_block, ny_block, km, max_blocks_clinic,
-		 *ibeg, *jbeg, *k,
+		 *ibeg, *jbeg, *k, *bid,
 		 dWUK, dUUU, dVVV,
 		 dUUW, dUUE, dVUS, dVUN);
 }
 
 extern "C"
 void cuda_advection_run_npbc_
-(int *ibeg, int *iend, int *jbeg, int *jend, int *k)
+(int *ibeg, int *iend, int *jbeg, int *jend, int *k, int *bid)
 {
      	dim3 dimGrid(*jend - *jbeg + 3);
 	dim3 dimBlock(*iend - *ibeg + 3);
@@ -394,7 +392,7 @@ void cuda_advection_run_npbc_
 	kernel1_npbc<<<dimGrid, dimBlock>>>
 		(dDXU, dDYU, dDZU,
 		 nx_block, ny_block, km, max_blocks_clinic,
-		 *ibeg, *jbeg, *k,
+		 *ibeg, *jbeg, *k, *bid,
 		 dWUK, dUUU, dVVV,
 		 dUUW, dUUE, dVUS, dVUN);
 }

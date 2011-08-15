@@ -8,7 +8,7 @@
 #
 FC = mpif90
 LD = mpif90
-NVCC = nvcc
+NVCC = nvcc -arch=sm_13
 CC = cc
 Cp = /bin/cp
 Cpp = /lib/cpp -P -DCUDA_VER

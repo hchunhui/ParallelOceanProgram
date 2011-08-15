@@ -740,9 +740,9 @@
 #ifdef CUDA_VER
    call cuda_advection_run_clearoutput()
    if (partial_bottom_cells) then
-      call cuda_advection_run_pbc(ibeg, iend, jbeg, jend, k)
+      call cuda_advection_run_pbc(ibeg, iend, jbeg, jend, k, bid)
    else
-      call cuda_advection_run_npbc(ibeg, iend, jbeg, jend, k)
+      call cuda_advection_run_npbc(ibeg, iend, jbeg, jend, k, bid)
    endif
    call cuda_advection_copyout(UUW, UUE, VUS, VUN)
 #else      
